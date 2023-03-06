@@ -119,18 +119,56 @@ initEvents(){
         document.addEventListener('click', this.closeMenuAttach.bind(this));
     });
     this.el.btnAttachPhoto.on('click',e=>{
+        this.el.inputPhoto.click();
+    })
+        this.el.inputPhoto.on('change',e=>{
+            [...this.el.inputPhoto.files].forEach();
+        })
+    
+    this.el.btnAttachCamera.on('click',e=>{
+        this.closeAllMainPanel();
+        this.el.panelCamera.addClass('open');
+        this.el.panelCamera.css({
+            'height':'calc(100% - 120px)'
+        })
         
     })
-    this.el.btnAttachCamera.on('click',e=>{
-        
+    this.el.btnClosePanelCamera.on('click', e =>{
+        this.closeAllMainPanel();
+        this.el.panelMessagesContainer.show();
+    });
+    this.el.btnTakePicture.on('click',e=>{
+
     })
     this.el.btnAttachDocument.on('click',e=>{
+        this.el.panelDocumentPreview.addClass('open');
+        this.closeAllMainPanel();
+        this.el.panelDocumentPreview.css({
+            'height':'calc(100% - 120px)'
+        })
         
     })
+    this.el.btnclosePanelDocumentPreview.on('click',e=>{
+        this.closeAllMainPanel();
+        this.el.panelMessagesContainer.show();
+    })
+    this.el.btnSendDocument.on('click', e=>{
+
+    })
     this.el.btnAttachContact.on('click',e=>{
+        this.el.modalContacts.show()
         
     });
+    this.el.btnCloseModalContacts.on('click', e=>{
+        this.el.modalContacts.hide()
+    })
     
+}
+closeAllMainPanel(){
+    this.el.panelCamera.removeClass('open');
+    this.el.panelDocumentPreview.removeClass('open');
+    this.el.panelMessagesContainer.hide();
+
 }
 closeMenuAttach(e){
     document.removeEventListener('click',this.closeMenuAttach);
