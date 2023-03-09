@@ -44,6 +44,7 @@ export class MicrophoneController extends ClassEvents{
             
          });
          this._mediaRecorder.start();
+         startTimer();
 
         }
 
@@ -53,6 +54,16 @@ export class MicrophoneController extends ClassEvents{
         if(this._available()){
             this._midiaRecorder.stop();
             this.stop();
+            this.stopTimer();
         }
+    }
+    startTimer(){
+        let start = Date.now();
+        this._recordMicrophoneInterval = setInterval(()=>{
+          this.trigger('recordTimer',(Date.now() - start));
+        },100);
+    }
+    stopTimer(){
+        clearInterval( this._recordMicrophoneInterval);
     }
 }
