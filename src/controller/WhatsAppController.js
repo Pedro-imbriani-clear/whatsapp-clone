@@ -130,7 +130,7 @@ export  class WhatsAppController{
                 }
      setActiveChat(contact){
         if(this._contactActive){
-            message.getRef(this._contactActive.chatId).onSnapshot(()=>{});
+            Message.getRef(this._contactActive.chatId).onSnapshot(()=>{});
         }
         this._contactActive = contact
 
@@ -156,15 +156,25 @@ export  class WhatsAppController{
             docs.forEach(doc=>{
                 let data = doc.data();
                 data.id = doc.id;
-                if(!this.el.panelMessagesContainer.querySelector('#_' + data.Id))
-                {
 
                 let message = new Message();
                 message.fromJSON(data);
                 let me = (data.from === this._user.email);
+                if(!this.el.panelMessagesContainer.querySelector('#_' + data.Id))
+                {               
+                if(!me){
+                    doc.ref.set({
+                        status:'read'
+                    },{
+                        merge:true
+                    });
+                }
                 let view = getViewElement(me);
                 this.el.panelMessagesContainer.appendChild(view);
 
+                }else if(me){
+                    let msgEl = this.el.panelMessagesContainer.querySelector('#_' + data.Id);
+                    msgEl.querySelector('.message-status').innerHTML = message.getViewElement().outerHTML;
                 }
             });
             if(autoScroll){
@@ -235,6 +245,14 @@ export  class WhatsAppController{
     
 };
 initEvents(){
+    this.el.inputSearchContacts.on('keyup', e=>{
+        if( this.el.inputSearchContacts.value.length > 0){
+            this.el.inputSearchContactsPlaceholder.hide();
+        }else{
+            this.el.inputSearchContactsPlaceholder.show();
+        }
+        this._user.getContacts(this.el.inputSearchContacts.value)
+    })
     this.el.myPhoto.on('click', e=>{
         this.closeAllLeftPanel();
         this.el.panelEditProfile.show();
