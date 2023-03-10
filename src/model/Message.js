@@ -1,9 +1,14 @@
 import { Model } from "./Model";
+import { Firebase } from "../util/firebase";
+import { format } from "../util/format";
 
 export class Message extends Model{
     constructor(){
         super();
     }
+    get id(){return this._data.id;}
+    set id(value){return this._data.id = value;}
+
     get content(){return this._data.content;}
     set content(value){return this._data.content = value;}
 
@@ -222,7 +227,7 @@ export class Message extends Model{
             `
                 break;
            default: div.innerHTML = `
-           <div class="_3_7SH kNKwo tail">
+           <div class="_3_7SH kNKwo tail" id=${this.id}>
            <span class="tail-container"></span>
            <span class="tail-container highlight"></span>
            <div class="_1YNgi copyable-text">
@@ -263,5 +268,17 @@ export class Message extends Model{
     let className = (me) ? 'message-out' : 'message-in';
     div.firstElementChild.classList.add(className);
     return div;
+    }
+    static send(chatId,contact,ftom,type){
+       return Message;getRef(chatId).add({
+            content,
+            timeStamp: new Date(),
+            status:'wait',
+            type,
+            from
+        });
+    }
+    static getRef(chatId){
+        return Firebase.db().collection('chats').doc(chatId).collection('messagens');
     }
 }
