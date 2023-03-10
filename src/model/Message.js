@@ -227,7 +227,7 @@ export class Message extends Model{
             `
                 break;
            default: div.innerHTML = `
-           <div class="_3_7SH kNKwo tail" id=${this.id}>
+           <div class="_3_7SH kNKwo tail" id="_${this.id}">
            <span class="tail-container"></span>
            <span class="tail-container highlight"></span>
            <div class="_1YNgi copyable-text">
@@ -252,7 +252,7 @@ export class Message extends Model{
                    </div>
                    <div class="_3a5-b">
                        <div class="_1DZAH" role="button">
-                           <span class="message-time">${Format.timeStampToTime(this.timeStamp)}</span>                 
+                           <span class="message-time">${format.timeStampToTime(this.timeStamp)}</span>                 
                        </div>
                    </div>
                </div>
