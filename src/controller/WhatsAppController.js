@@ -335,6 +335,7 @@ initEvents(){
     })
         this.el.inputPhoto.on('change',e=>{
             [...this.el.inputPhoto.files].forEach();
+            Message.sendImage(this._contactActive.chatId,this._user.email, file);
         })
     
     this.el.btnAttachCamera.on('click',e=>{
