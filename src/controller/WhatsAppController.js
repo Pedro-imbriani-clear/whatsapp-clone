@@ -162,6 +162,8 @@ export  class WhatsAppController{
                 let message = new Message();
                 message.fromJSON(data);
                 let me = (data.from === this._user.email);
+                let view = getViewElement(me);
+    
                 if(!this.el.panelMessagesContainer.querySelector('#_' + data.Id))
                 {               
                 if(!me){
@@ -171,17 +173,38 @@ export  class WhatsAppController{
                         merge:true
                     });
                 }
-                let view = getViewElement(me);
+              
                 this.el.panelMessagesContainer.appendChild(view);
 
                 }else {
-                    let view = getViewElement(me);
-                    this.el.panelMessagesContainer.querySelector('#_' + data.Id).innerHTML = view.innerHTML;
+                  
+                    let parent =  this.el.panelMessagesContainer.querySelector('#_' + data.Id).parentNode;
+                    parent.replaceChild(view, this.el.panelMessagesContainer.querySelector('#_' + data.Id));
+                    
                 }
                 
                 if(this.el.panelMessagesContainer.querySelector('#_' + data.Id) && me){
                     let msgEl = this.el.panelMessagesContainer.querySelector('#_' + data.Id);
                     msgEl.querySelector('.message-status').innerHTML = message.getViewElement().outerHTML;
+                }
+                if(message.type === 'contact'){
+                    view.querySelector('.btn-message-send').on('click',e=>{
+                        Chat.createIfNotExists(this._user.email, message.content.email).then(chat =>{
+                            let contact = new User(message.content.email);
+                            contact.on('datachange',data=>{
+                                contact.chatId = chat.id;
+                                this._user.addContact(contact);
+                                this._user.chatId = chat.id;
+
+                                contact.addContact(this._user);
+
+                                this.setActiveChat(contact);
+                              
+                            });
+                        
+                        });
+
+                    })
                 }
             });
             if(autoScroll){

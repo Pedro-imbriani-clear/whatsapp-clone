@@ -87,9 +87,6 @@ export class Message extends Model{
                     img.src = this.content.photo;
                     img.show();
                 }
-                div.querySelector('.btn-message-send').on('click',e=>{
-                    console.log('enviar mensagem ');
-                })
                 break;
             case 'image':
                  div.innerHTML = `
