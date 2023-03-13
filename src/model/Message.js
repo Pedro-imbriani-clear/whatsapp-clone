@@ -2,6 +2,7 @@ import { Model } from "./Model";
 import { Firebase } from "../util/firebase";
 import { format } from "../util/format";
 
+
 export class Message extends Model{
     constructor(){
         super();
@@ -12,14 +13,32 @@ export class Message extends Model{
     get content(){return this._data.content;}
     set content(value){return this._data.content = value;}
 
-    get tpe(){return this._data.tpe;}
-    set tpe(value){return this._data.tpe = value;}
+    get type(){return this._data.type;}
+    set type(value){return this._data.type = value;}
 
     get timeStamp(){return this._data.timeStamp;}
     set timeStamp(value){return this._data.timeStamp = value;}
 
     get status(){return this._data.status;}
     set status(value){return this._data.status = value;}
+
+    get preview(){return this._data.preview;}
+    set preview(value){return this._data.preview = value;}
+
+    get info(){return this._data.info;}
+    set info(value){return this._data.info = value;}
+
+    get fileType(){return this._data.fileType;}
+    set fileType(value){return this._data.fileType = value;}
+
+    get size(){return this._data.size;}
+    set size(value){return this._data.size = value;}
+
+    get from(){return this._data.from;}
+    set from(value){return this._data.from = value;}
+
+    get filename(){return this._data.filename;}
+    set filename(value){return this._data.filename = value;}
     
     getViewElement(me = true){
         let div = document.createElement('div');
@@ -154,7 +173,10 @@ export class Message extends Model{
                     </div>
                 </div>
             </div>
-                `
+                `;
+                div.on('click', e=>{
+                    window.open(this.content);
+                });
                 break;
             case 'audio':
                  div.innerHTML = `
@@ -283,42 +305,125 @@ export class Message extends Model{
     div.firstElementChild.classList.add(className);
     return div;
     }
-    static sendImage(chatId,file,from,){
-        return new Promise((s,f)=>{
-       let uploadTask = Firebase.hd().ref(from).child(Date.now() + '_' + file.name).put(file);
+    static upload(file){
+        return new Promise((s, f) => {
+            let uploadTask = Firebase.hd().ref(from).child(Date.now() + '_' + file.name).put(file);
        uploadTask.on('state_changed',e=>{
         console.info('upload',e);
        },err=>{
-        console.error(err);
+        f(err);
        },()=>{
-        Message.send(
-            chatId, 
-            from, 
-            'image',
-            uploadTask.snapshot.dowloadURL).then(()=>{
-            s();
-        });
+          s(uploadTask.snapshot);
        });
-    });
-    }
-    static send(chatId,content,from,type){
-       return new Promise((s,f)=>{
+            
+     });
+        
 
-        Message;getRef(chatId).add({
-            content,
-            timeStamp: new Date(),
-            status:'wait',
-            type,
-            from}).then(result=>{
-                result.parent.doc(result.id).set({
-                    status:'sent'
-                },{
-                    merge:true
-                }).then(()=>{
-                    s();
-                });
+    }
+static sendDocument(chatId, from, documentFile, imageFile, pdfInfo) {
+
+    Message.send(chatId, from, 'document', '', false).then(msgRef => {
+
+        Message.upload(chatId, from, documentFile).then(downloadURL => {
+
+            let downloadFile = downloadURL;
+
+            if (imageFile) {
+
+        Message.upload(chatId, from, imageFile).then(downloadURL2 => {
+
+            let downloadPreview = downloadURL2;
+
+            msgRef.set({
+                content: downloadFile,
+                preview: downloadPreview,
+                filename: file.name,
+                size: file.size,
+                info: pdfInfo,
+                fileType: file.type,
+                status: 'sent'
+            }, {
+                merge: true
+            });
+
+        });
+
+    } else {
+
+        msgRef.set({
+            content: downloadFile,
+            filename: file.name,
+            size: file.size,
+            fileType: file.type,
+            status: 'sent'
+        }, {
+            merge: true
+        });
+
+            }
+
+        });
+
+    });
+}
+
+    
+    static sendImage(chatId, from, file) {
+
+        return new Promise((s, f) => {
+
+            let uploadTask = Firebase.hd().ref(from).child(Date.now() + '_' + file.name).put(file);
+
+            uploadTask.on('state_changed', e => {
+
+            }, err => {
+                console.error(err)
+            }, () => {
+
+        uploadTask.snapshot.ref.getDownloadURL().then(downloadURL => {
+            Message.send(
+                chatId,
+                from,
+                'image',
+                downloadURL
+            ).then(() => {
+                s();
             });
         });
+
+    });
+
+});
+}
+
+    static send(chatId, from, type, content) {
+
+        return new Promise((s, f) => {
+
+            Message.getRef(chatId).add({
+                content,
+                timeStamp: new Date(),
+                status: 'wait',
+                type,
+                from
+            }).then(result => {
+                let docRef = result.parent.doc(result.id)
+                docRef.set({
+                    status: 'sent'
+                }, {
+                    merge: true
+                }).then(() => {
+
+                    s(docRef);
+
+                })
+
+            })
+
+        })
+
+
+
     }
     static getRef(chatId){
         return Firebase.db().collection('chats').doc(chatId).collection('messagens');
