@@ -42,6 +42,7 @@ export class Message extends Model{
     
     getViewElement(me = true){
         let div = document.createElement('div');
+        div.id = `_${this.id}`;
         div.className = 'message';
         switch (this.type){
             case 'contact':
@@ -81,7 +82,14 @@ export class Message extends Model{
                 </div>
             </div>
                  `;
-                
+                if(this.contact.photo){
+                    let img = div.querySelector('.photo-contact-sended');
+                    img.src = this.content.photo;
+                    img.show();
+                }
+                div.querySelector('.btn-message-send').on('click',e=>{
+                    console.log('enviar mensagem ');
+                })
                 break;
             case 'image':
                  div.innerHTML = `
@@ -257,7 +265,7 @@ export class Message extends Model{
             `
                 break;
            default: div.innerHTML = `
-           <div class="_3_7SH kNKwo tail" id="_${this.id}">
+           <div class="_3_7SH kNKwo tail" >
            <span class="tail-container"></span>
            <span class="tail-container highlight"></span>
            <div class="_1YNgi copyable-text">
@@ -319,6 +327,9 @@ export class Message extends Model{
      });
         
 
+    }
+    static sendContact(chatId,from,contact){
+        return Message.send(chatId,from,'contact', contact);
     }
 static sendDocument(chatId, from, documentFile, imageFile, pdfInfo) {
 
