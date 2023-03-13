@@ -8,6 +8,7 @@ import { Chat } from '../model/Chat';
 import { Message } from '../model/Message';
 import { Base64 } from '../util/Base64';
 import { ContactscController } from './ContactsController';
+import { Upload } from '../util/Upload';
 
 
 
@@ -63,7 +64,7 @@ export  class WhatsAppController{
             this._user.on('contactschange',docs=>{
                 this.el.contactsMessagesList.innerHTML = '';
                 docs.forEach(doc =>{
-                let conatct = doc.data();
+                let contact= doc.data();
                 let div = document.createElement('div');
     
                 div.className = 'contact-item';
@@ -90,7 +91,7 @@ export  class WhatsAppController{
                     <span dir="auto" title="${contact.name}" class="_1wjpf">${contact.name}</span>
                 </div>
                 <div class="_3Bxar">
-                    <span class="_3T2VG">${Format.timeStampToTime(contact.lastMessageTime)}</span>
+                    <span class="_3T2VG">${format.timeStampToTime(contact.lastMessageTime)}</span>
                 </div>
             </div>
             <div class="_1AwDx">
@@ -122,7 +123,7 @@ export  class WhatsAppController{
             img.show();
             }
             div.on('click', e =>{
-                this.setActiveChat(conatct)
+                this.setActiveChat(contact)
 
             })
             this.el.contactsMessagesList.appendChild(div);
@@ -310,7 +311,18 @@ initEvents(){
         this.el.inputProfilePhoto.click();
 
     });
-    this.el.inputNamePAnelEditProfile.on('keypress',e=>{
+    this.el.inputProfilePhoto.on('change', e=>{
+        if(this.el.inputProfilePhoto.files.length > 0){
+            let file = this.el.inputProfilePhoto.files[0];
+            Upload.send(file.this._user.email).then(snapshot=>{
+                this._user.photo = snapshot.downloadURL;
+                this._user.save().then(()=>{
+                    this.el.btnCloseEditProfile.click();
+                });
+            });
+        }
+    });
+    this.el.inputNamePanelEditProfile.on('keypress',e=>{
         if(e.key === 'Enter'){
             e.preventDefault();
             this.el.btnSavePanelEditProfile.click();
