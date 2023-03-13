@@ -39,6 +39,12 @@ export class Message extends Model{
 
     get filename(){return this._data.filename;}
     set filename(value){return this._data.filename = value;}
+
+    get photo(){return this._data.photo;}
+    set photo(value){return this._data.photo = value;}
+
+    get duration(){return this._data.duration;}
+    set duration(value){return this._data.duration = value;}
     
     getViewElement(me = true){
         let div = document.createElement('div');
@@ -214,7 +220,7 @@ export class Message extends Model{
                             <div class="_1sLSi">
                                 <span class="nDKsM" style="width: 0%;"></span>
                                 <input type="range" min="0" max="100" class="_3geJ8" value="0">
-                                <audio src="#${this.content}" preload="auto"></audio>
+                                <audio src="${this.content}" preload="auto"></audio>
                             </div>
                         </div>
                     </div>
@@ -259,7 +265,56 @@ export class Message extends Model{
             </span>
         </div>
         </div>
-            `
+            `;
+            if(this.photo){
+                let img = div.querySelector('.message-photo');
+                img.src = this.photo;
+                img.show();
+            }
+            let audioEl = div.querySelector('aduio');
+            let loadEl = div.querySelector('.aduio-load');
+            let btnPlay = div.querySelector('.aduio-play');
+            let btnPause = div.querySelector('.aduio-pause');
+            let InputRange = div.querySelector('[type=range]');
+            let audioDuration =  div.querySelector('.message-audio-duration');
+            audioEl.onloadeddata = e =>{
+                loadEl.hide();
+                btnPlay.show();
+
+            };
+            audioEl.onplay = e=>{
+                btnPlay.hide();
+                btnPause.show();
+            }
+            audioEl.onpause = e=>{
+               audioDuration.innerHTML = format.toTime(this.duration*1000);
+                btnPlay.show();
+                btnPause.hide();
+            }
+            audioEl.onended = e =>{
+                audioEl.currentTime = 0;
+            }
+            audioEl.ontimeupdate = e=>{
+                btnPlay.hide();
+                btnPause.hide();
+                audioDuration.innerHTML = format.toTime(audioEl.currentTime * 1000);
+                InputRange.value = (audioEl.currentTime *100 )/this.duration;
+                if(audioEl.paused){
+                    btnPlay.show();
+                }else{
+                    btnPause.show();
+                }
+            }
+            btnPlay.on('click',e=>{
+                audioEl.play();
+            });
+            btnPause.on('click',e=>{
+                audioEl.pause();
+            });
+            InputRange.on('change', e=>{
+                audioEl.currentTime = (InputRange.value * this.duration)/100;
+            })
+
                 break;
            default: div.innerHTML = `
            <div class="_3_7SH kNKwo tail" >
@@ -324,6 +379,25 @@ export class Message extends Model{
      });
         
 
+    }
+    static sendAudio(chatId,from,file,metadata,photo){
+     return Message.send(chatId,from,'audio','').then(msgRef=>{
+        Message.upload(file,from).then(snapshot=>{
+            let downloadFile = snapshot.downloadURL;
+
+            msgRef.set({
+                content: downloadFile,
+                size: file.size,   
+                fileType: file.type,
+                status: 'sent',
+                photo,
+                duration:metadata.duration
+            }, {
+                merge: true
+            });
+
+     });
+     });
     }
     static sendContact(chatId,from,contact){
         return Message.send(chatId,from,'contact', contact);
